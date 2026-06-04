@@ -19,6 +19,9 @@ include_directories(${FAISS_INCLUDE_DIR})
 
 link_directories(${FAISS_LIB_DIR})
 
+# Find OpenBLAS (required by FAISS)
+find_library(OPENBLAS_LIB openblas PATHS /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/openblas-pthread)
+
 add_library(dataset
     src/config_generator.cpp
     src/dataset.cpp
@@ -42,7 +45,7 @@ add_executable(adaptivepq
     main.cpp
 )
 
-target_link_libraries(adaptivepq PRIVATE dataset faiss)
+target_link_libraries(adaptivepq PRIVATE dataset faiss gomp ${OPENBLAS_LIB})
 
 target_compile_options(adaptivepq PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-O3 -march=native>

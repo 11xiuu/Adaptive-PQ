@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 #include <cmath>
@@ -34,6 +35,7 @@ struct BenchmarkConfig {
     std::vector<PQSubspaceConfig> pq;
     std::vector<float> alphas;
     std::int64_t adaptive_target = 0;
+    bool is_residual = false;
 };
 
 std::vector<PQSubspaceConfig> make_uniform_config(
@@ -113,12 +115,14 @@ void print_progress(const char* name, std::int64_t current, std::int64_t total) 
 }
 
 struct FaissPQEval {
+    std::string name;
     std::int64_t candidate_count;
     double avg_time_ms;
     double recall;
 };
 
 std::vector<FaissPQEval> evaluate_faiss_pq(
+    const std::string& label,
     const Dataset& base,
     const Dataset& query,
     const std::vector<std::vector<std::int64_t>>& truth,
@@ -130,7 +134,7 @@ std::vector<FaissPQEval> evaluate_faiss_pq(
     const std::int64_t d = base.d;
     const std::int64_t nq = query.n;
 
-    std::cout << "\n=== FAISS PQ Test ===\n";
+    std::cout << "\n=== " << label << " ===\n";
     std::cout << "Config: M=" << M << " nbits=" << nbits << '\n';
 
     faiss::IndexPQ pq_index(d, M, nbits, faiss::METRIC_L2);
@@ -190,7 +194,7 @@ std::vector<FaissPQEval> evaluate_faiss_pq(
         std::cout << std::fixed << std::setprecision(4)
                   << "cand=" << cand << "  time=" << avg_ms << " ms  recall=" << recall << '\n';
 
-        results.push_back({cand, avg_ms, recall});
+        results.push_back({label, cand, avg_ms, recall});
     }
 
     return results;
@@ -227,7 +231,9 @@ int main() {
         {"8x8bit", make_uniform_config(index_base.d, 8, 8), {0.6f}, 0},
         {"16x4bit", make_uniform_config(index_base.d, 16, 4), {0.6f}, 0},
         {"kcenter8", {}, {1.0f, 0.8f, 0.6f}, 8},
-        {"kcenter16", {}, {1.0f, 0.8f, 0.6f}, 16}
+        {"kcenter16", {}, {1.0f, 0.8f, 0.6f}, 16},
+        {"residual_kcenter8", {}, {1.0f, 0.8f, 0.6f}, 8, true},
+        {"residual_kcenter16", {}, {1.0f, 0.8f, 0.6f}, 16, true}
     };
 
     std::cout << "building ground truth\n";
@@ -269,6 +275,7 @@ int main() {
             : Index(cfg.pq, ivf_list_size);
 
         std::cout << "building index config=" << cfg.name << '\n';
+        index.set_residual(cfg.is_residual);
         const auto build_start = Clock::now();
         index.build(index_base);
         const double build_ms = elapsed_ms(build_start, Clock::now());
@@ -399,16 +406,19 @@ int main() {
 
     // ── FAISS PQ test ──
     const std::vector<std::int64_t> candidate_counts = {100, 300, 500};
-    const auto faiss_results = evaluate_faiss_pq(
-        index_base, index_query, truth, topk, candidate_counts, 8, 8
-    );
+    std::vector<FaissPQEval> faiss_results;
+    auto r1 = evaluate_faiss_pq("faiss-PQ 8*8",  index_base, index_query, truth, topk, candidate_counts, 8,  8);
+    auto r2 = evaluate_faiss_pq("faiss-PQ 16*4", index_base, index_query, truth, topk, candidate_counts, 16, 4);
+    faiss_results.insert(faiss_results.end(), r1.begin(), r1.end());
+    faiss_results.insert(faiss_results.end(), r2.begin(), r2.end());
 
     {
         const std::filesystem::path csv_path = result_dir / "faiss_pq_results.csv";
         std::ofstream csv(csv_path);
-        csv << "candidate_count,avg_time_ms,recall\n";
+        csv << "config,candidate_count,avg_time_ms,recall\n";
         for (const auto& r : faiss_results) {
-            csv << r.candidate_count << ","
+            csv << r.name << ","
+                << r.candidate_count << ","
                 << std::fixed << std::setprecision(4) << r.avg_time_ms << ","
                 << std::fixed << std::setprecision(6) << r.recall << "\n";
         }

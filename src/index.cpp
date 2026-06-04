@@ -416,10 +416,37 @@ void Index::build(const Dataset& data) {
             continue;
         }
 
+        if (residual_) {
+            if (adaptive_config_) {
+                std::cout << "residual mode\n";
+            }
+            std::cout << "\nresidual list_id=" << list_id << " n=" << list_n << '\n';
+        }
+
+        // Build residual dataset if in residual mode
+        std::unique_ptr<Dataset> residual_dataset;
+        std::vector<std::int64_t> seq_ids;
+        if (residual_) {
+            residual_dataset = std::make_unique<Dataset>(list_n, d_);
+            for (std::int64_t row = 0; row < list_n; ++row) {
+                const std::int64_t orig_id = list.ids[static_cast<std::size_t>(row)];
+                for (std::int64_t j = 0; j < d_; ++j) {
+                    residual_dataset->data_ptr[static_cast<std::size_t>(row * d_ + j)] =
+                        data.data_ptr[orig_id * d_ + j] -
+                        coarse_centroids_[static_cast<std::size_t>(list_id * d_ + j)];
+                }
+            }
+            seq_ids.resize(static_cast<std::size_t>(list_n));
+            std::iota(seq_ids.begin(), seq_ids.end(), 0);
+        }
+
+        const Dataset& train_data = residual_ ? *residual_dataset : data;
+        const std::vector<std::int64_t>& train_ids = residual_ ? seq_ids : list.ids;
+
         if (adaptive_config_) {
             list.config = make_kcenter_merge_config(
-                data,
-                list.ids,
+                train_data,
+                train_ids,
                 adaptive_subspace_count_,
                 adaptive_radius_sq
             );
@@ -438,7 +465,7 @@ void Index::build(const Dataset& data) {
             q.k = std::min(sub.codebook_size, list_n);
             q.k = std::min<std::int64_t>(q.k, std::numeric_limits<std::int16_t>::max());
 
-            const std::vector<float> sub_data = extract_subspace(data, list.ids, sub.dims);
+            const std::vector<float> sub_data = extract_subspace(train_data, train_ids, sub.dims);
             q.centroids = kmeans(sub_data.data(), list_n, q.dim, q.k, 10);
 
             for (std::int64_t row = 0; row < list_n; ++row) {
@@ -592,8 +619,13 @@ std::vector<SearchResult> Index::query(const float* query_vector, std::int64_t n
             table.resize(static_cast<std::size_t>(q.k));
 
             for (std::int64_t j = 0; j < q.dim; ++j) {
-                query_sub[static_cast<std::size_t>(j)] =
-                    query_vector[sub.dims[static_cast<std::size_t>(j)]];
+                const std::int64_t dim_idx = sub.dims[static_cast<std::size_t>(j)];
+                float val = query_vector[dim_idx];
+                if (residual_) {
+                    val -= coarse_centroids_[
+                        static_cast<std::size_t>(coarse[static_cast<std::size_t>(probe)].id * d_ + dim_idx)];
+                }
+                query_sub[static_cast<std::size_t>(j)] = val;
             }
 
             for (std::int64_t c = 0; c < q.k; ++c) {
@@ -696,8 +728,13 @@ QueryResult Index::query_refine(
             table.resize(static_cast<std::size_t>(q.k));
 
             for (std::int64_t j = 0; j < q.dim; ++j) {
-                query_sub[static_cast<std::size_t>(j)] =
-                    query_vector[sub.dims[static_cast<std::size_t>(j)]];
+                const std::int64_t dim_idx = sub.dims[static_cast<std::size_t>(j)];
+                float val = query_vector[dim_idx];
+                if (residual_) {
+                    val -= coarse_centroids_[
+                        static_cast<std::size_t>(coarse[static_cast<std::size_t>(probe)].id * d_ + dim_idx)];
+                }
+                query_sub[static_cast<std::size_t>(j)] = val;
             }
 
             for (std::int64_t c = 0; c < q.k; ++c) {

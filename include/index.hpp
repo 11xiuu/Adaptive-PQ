@@ -34,6 +34,8 @@ public:
 
     void build(const Dataset& data);
 
+    void set_residual(bool v) { residual_ = v; }
+
     std::vector<SearchResult> query(const float* query_vector, std::int64_t nprobe) const;
     std::vector<SearchResult> query(const std::vector<float>& query_vector, std::int64_t nprobe) const;
     QueryResult query_refine(
@@ -72,6 +74,7 @@ private:
     std::vector<IVFList> lists_;
     std::vector<float> quantization_errors_;
     double average_bits_ = 0.0;
+    bool residual_ = false;
 
     void validate_config(std::int64_t dim) const;
 };
