@@ -1,0 +1,53 @@
+{
+  "dataset_dir": "D:/project/vscodeProjects/AdaptivePQ/data/sift",
+  "base_n": 1000000,
+  "base_d": 128,
+  "query_n": 100,
+  "query_d": 128,
+  "ivf_list_size": 1000,
+  "adaptive_radius_scale": 0.03,
+  "topk": 10,
+  "truth_ms": 5166.3,
+  "configs": [
+    {
+      "name": "8x8bit",
+      "subspaces": 8,
+      "average_bits": 64,
+      "build_ms": 511794,
+      "results": [
+        {"alpha": 0.6, "nprobe": 1, "time_ms": 0.09076, "recall": 0.39, "average_bits": 64, "exact_per_query": 95.22, "skipped_per_query": 1093.06, "scanned_per_query": 1188.28, "exact_ratio": 0.0801326, "skipped_ratio": 0.919867},
+        {"alpha": 0.6, "nprobe": 2, "time_ms": 0.122014, "recall": 0.561, "average_bits": 64, "exact_per_query": 110.72, "skipped_per_query": 2265.66, "scanned_per_query": 2376.38, "exact_ratio": 0.0465919, "skipped_ratio": 0.953408},
+        {"alpha": 0.6, "nprobe": 3, "time_ms": 0.156583, "recall": 0.665, "average_bits": 64, "exact_per_query": 118.13, "skipped_per_query": 3434.28, "scanned_per_query": 3552.41, "exact_ratio": 0.0332535, "skipped_ratio": 0.966747},
+        {"alpha": 0.6, "nprobe": 4, "time_ms": 0.195345, "recall": 0.715, "average_bits": 64, "exact_per_query": 123.07, "skipped_per_query": 4576.39, "scanned_per_query": 4699.46, "exact_ratio": 0.0261881, "skipped_ratio": 0.973812},
+        {"alpha": 0.6, "nprobe": 5, "time_ms": 0.219358, "recall": 0.767, "average_bits": 64, "exact_per_query": 126.09, "skipped_per_query": 5685.46, "scanned_per_query": 5811.55, "exact_ratio": 0.0216964, "skipped_ratio": 0.978304},
+        {"alpha": 0.6, "nprobe": 7, "time_ms": 0.261091, "recall": 0.81, "average_bits": 64, "exact_per_query": 130.14, "skipped_per_query": 7914.4, "scanned_per_query": 8044.54, "exact_ratio": 0.0161774, "skipped_ratio": 0.983823},
+        {"alpha": 0.6, "nprobe": 10, "time_ms": 0.343539, "recall": 0.872, "average_bits": 64, "exact_per_query": 134.54, "skipped_per_query": 11262.1, "scanned_per_query": 11396.6, "exact_ratio": 0.0118052, "skipped_ratio": 0.988195},
+        {"alpha": 0.6, "nprobe": 15, "time_ms": 0.497589, "recall": 0.914, "average_bits": 64, "exact_per_query": 137.51, "skipped_per_query": 16718, "scanned_per_query": 16855.5, "exact_ratio": 0.00815816, "skipped_ratio": 0.991842},
+        {"alpha": 0.6, "nprobe": 20, "time_ms": 0.52921, "recall": 0.932, "average_bits": 64, "exact_per_query": 139, "skipped_per_query": 22001.5, "scanned_per_query": 22140.5, "exact_ratio": 0.0062781, "skipped_ratio": 0.993722},
+        {"alpha": 0.6, "nprobe": 30, "time_ms": 0.690804, "recall": 0.949, "average_bits": 64, "exact_per_query": 140.13, "skipped_per_query": 32424.3, "scanned_per_query": 32564.5, "exact_ratio": 0.00430315, "skipped_ratio": 0.995697},
+        {"alpha": 0.6, "nprobe": 40, "time_ms": 1.10036, "recall": 0.954, "average_bits": 64, "exact_per_query": 140.76, "skipped_per_query": 42619.9, "scanned_per_query": 42760.6, "exact_ratio": 0.00329181, "skipped_ratio": 0.996708},
+        {"alpha": 0.6, "nprobe": 50, "time_ms": 1.09612, "recall": 0.959, "average_bits": 64, "exact_per_query": 141.06, "skipped_per_query": 52753, "scanned_per_query": 52894.1, "exact_ratio": 0.00266684, "skipped_ratio": 0.997333}
+      ]
+    },
+    {
+      "name": "16x4bit",
+      "subspaces": 16,
+      "average_bits": 64,
+      "build_ms": 11797.6,
+      "results": [
+        {"alpha": 0.6, "nprobe": 1, "time_ms": 0.114624, "recall": 0.386, "average_bits": 64, "exact_per_query": 208.41, "skipped_per_query": 979.87, "scanned_per_query": 1188.28, "exact_ratio": 0.175388, "skipped_ratio": 0.824612},
+        {"alpha": 0.6, "nprobe": 2, "time_ms": 0.143436, "recall": 0.553, "average_bits": 64, "exact_per_query": 252.7, "skipped_per_query": 2123.68, "scanned_per_query": 2376.38, "exact_ratio": 0.106338, "skipped_ratio": 0.893662},
+        {"alpha": 0.6, "nprobe": 3, "time_ms": 0.188928, "recall": 0.656, "average_bits": 64, "exact_per_query": 275.87, "skipped_per_query": 3276.54, "scanned_per_query": 3552.41, "exact_ratio": 0.0776571, "skipped_ratio": 0.922343},
+        {"alpha": 0.6, "nprobe": 4, "time_ms": 0.223232, "recall": 0.704, "average_bits": 64, "exact_per_query": 291.13, "skipped_per_query": 4408.33, "scanned_per_query": 4699.46, "exact_ratio": 0.0619497, "skipped_ratio": 0.93805},
+        {"alpha": 0.6, "nprobe": 5, "time_ms": 0.209352, "recall": 0.756, "average_bits": 64, "exact_per_query": 301.22, "skipped_per_query": 5510.33, "scanned_per_query": 5811.55, "exact_ratio": 0.0518313, "skipped_ratio": 0.948169},
+        {"alpha": 0.6, "nprobe": 7, "time_ms": 0.255353, "recall": 0.796, "average_bits": 64, "exact_per_query": 315.47, "skipped_per_query": 7729.07, "scanned_per_query": 8044.54, "exact_ratio": 0.0392154, "skipped_ratio": 0.960785},
+        {"alpha": 0.6, "nprobe": 10, "time_ms": 0.280187, "recall": 0.85, "average_bits": 64, "exact_per_query": 328.99, "skipped_per_query": 11067.6, "scanned_per_query": 11396.6, "exact_ratio": 0.0288673, "skipped_ratio": 0.971133},
+        {"alpha": 0.6, "nprobe": 15, "time_ms": 0.344589, "recall": 0.893, "average_bits": 64, "exact_per_query": 340.16, "skipped_per_query": 16515.3, "scanned_per_query": 16855.5, "exact_ratio": 0.0201809, "skipped_ratio": 0.979819},
+        {"alpha": 0.6, "nprobe": 20, "time_ms": 0.463504, "recall": 0.911, "average_bits": 64, "exact_per_query": 345.8, "skipped_per_query": 21794.7, "scanned_per_query": 22140.5, "exact_ratio": 0.0156185, "skipped_ratio": 0.984382},
+        {"alpha": 0.6, "nprobe": 30, "time_ms": 0.5162, "recall": 0.926, "average_bits": 64, "exact_per_query": 351.05, "skipped_per_query": 32213.4, "scanned_per_query": 32564.5, "exact_ratio": 0.0107802, "skipped_ratio": 0.98922},
+        {"alpha": 0.6, "nprobe": 40, "time_ms": 0.612692, "recall": 0.932, "average_bits": 64, "exact_per_query": 353.88, "skipped_per_query": 42406.8, "scanned_per_query": 42760.6, "exact_ratio": 0.00827584, "skipped_ratio": 0.991724},
+        {"alpha": 0.6, "nprobe": 50, "time_ms": 0.703213, "recall": 0.938, "average_bits": 64, "exact_per_query": 355.16, "skipped_per_query": 52538.9, "scanned_per_query": 52894.1, "exact_ratio": 0.00671455, "skipped_ratio": 0.993285}
+      ]
+    } 
+]  
+}
