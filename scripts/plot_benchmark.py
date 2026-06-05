@@ -6,66 +6,80 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
-def main() -> None:
-    result_dir = Path(__file__).resolve().parents[1] / "result"
-    json_path = result_dir / "benchmark_results.json"
-    out_path = result_dir / "benchmark_results.png"
+MIN_RECALL = 0.7
 
-    with json_path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
 
-    all_rows = [row for cfg in data["configs"] for row in cfg["results"]]
-    first_probe = min(row["nprobe"] for row in all_rows)
-    last_probe = max(row["nprobe"] for row in all_rows)
-    min_recall = max(row["recall"] for row in all_rows if row["nprobe"] == first_probe)
-    max_time = min(row["time_ms"] for row in all_rows if row["nprobe"] == last_probe)
+def load_json(path: Path):
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
 
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.8))
 
-    for cfg in data["configs"]:
-        alphas = sorted({row["alpha"] for row in cfg["results"]}, reverse=True)
-        for alpha in alphas:
-            rows = [row for row in cfg["results"] if row["alpha"] == alpha]
-            rows.sort(key=lambda row: row["nprobe"])
-            rows = [
-                row for row in rows
-                if row["recall"] >= min_recall and row["time_ms"] <= max_time
-            ]
-            if not rows:
-                continue
-            nprobe = [row["nprobe"] for row in rows]
-            time_ms = [row["time_ms"] for row in rows]
-            recall = [row["recall"] for row in rows]
-            exact_ratio = [row["exact_ratio"] for row in rows]
-            skipped_ratio = [row["skipped_ratio"] for row in rows]
-            avg_bits = rows[0].get("average_bits", cfg.get("average_bits", 0.0))
-            label = f"{cfg['name']} {avg_bits:.1f}b alpha={alpha}"
+def plot_dataset(result_subdir: Path) -> None:
+    """Plot all JSON results in a single dataset directory."""
+    json_files = sorted(result_subdir.glob("*.json"))
+    if not json_files:
+        return
 
-            axes[0].plot(time_ms, recall, marker="o", label=label)
-            axes[1].plot(nprobe, exact_ratio, marker="o", label=f"{label} exact")
-            axes[1].plot(nprobe, skipped_ratio, marker="x", linestyle="--", label=f"{label} skipped")
+    out_path = result_subdir / "time_recall_curve.png"
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    axes[0].set_title(f"Time-Recall Curve @ {data['topk']}")
-    axes[0].set_xlabel("avg time per query (ms)")
-    axes[0].set_ylabel(f"recall@{data['topk']}")
-    axes[0].set_ylim(0.0, 1.0)
-    axes[0].grid(True, alpha=0.3)
-    axes[0].legend()
+    for jf in json_files:
+        data = load_json(jf)
+        name = data.get("name", jf.stem)
+        alpha = data.get("alpha")
 
-    axes[1].set_title("Refine Ratio")
-    axes[1].set_xlabel("nprobe")
-    axes[1].set_ylabel("ratio")
-    axes[1].set_ylim(0.0, 1.0)
-    axes[1].grid(True, alpha=0.3)
-    axes[1].legend(fontsize=8)
+        rows = data["results"]
+        rows.sort(key=lambda r: r["nprobe"])
 
-    fig.suptitle(
-        f"IVF={data['ivf_list_size']} base={data['base_n']} query={data['query_n']} "
-        f"recall>={min_recall:.4f} time<={max_time:.4f}ms"
-    )
+        # Truncate at MIN_RECALL
+        cut = 0
+        for i, r in enumerate(rows):
+            if r["recall"] >= MIN_RECALL:
+                cut = i
+                break
+        rows = rows[cut:]
+        if not rows:
+            continue
+
+        time_ms = [r["time_ms"] for r in rows]
+        recall = [r["recall"] for r in rows]
+
+        avg_bits = data.get("average_bits")
+        bits_str = f" {avg_bits:.0f}b" if avg_bits else ""
+
+        if alpha is not None:
+            label = f"{name}{bits_str}  α={alpha}"
+        else:
+            label = f"{name}{bits_str}"
+
+        marker = "s" if "faiss" in name.lower() else "o"
+        ls = "--" if "faiss" in name.lower() else "-"
+        ax.plot(time_ms, recall, marker=marker, linestyle=ls, label=label)
+
+    ax.set_title(f"{result_subdir.name}  (recall ≥ {MIN_RECALL})")
+    ax.set_xlabel("avg time per query (ms)")
+    ax.set_ylabel("recall@10")
+    ax.set_ylim(MIN_RECALL - 0.05, 1.0)
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=8)
+
     fig.tight_layout()
     fig.savefig(out_path, dpi=160)
-    print(f"saved {out_path}")
+    plt.close(fig)
+    print(f"  saved {out_path}")
+
+
+def main() -> None:
+    result_dir = Path(__file__).resolve().parents[1] / "result"
+    subdirs = sorted([d for d in result_dir.iterdir() if d.is_dir()])
+
+    if not subdirs:
+        print("no dataset subdirectories found in result/")
+        return
+
+    for d in subdirs:
+        print(f"plotting {d.name}")
+        plot_dataset(d)
 
 
 if __name__ == "__main__":

@@ -45,9 +45,29 @@ add_executable(adaptivepq
     main.cpp
 )
 
-target_link_libraries(adaptivepq PRIVATE dataset faiss gomp ${OPENBLAS_LIB})
+target_link_libraries(adaptivepq PRIVATE dataset)
 
 target_compile_options(adaptivepq PRIVATE
+    $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-O3 -march=native>
+)
+
+add_executable(adaptivepq_faiss
+    main_faiss.cpp
+)
+
+target_link_libraries(adaptivepq_faiss PRIVATE dataset faiss gomp ${OPENBLAS_LIB})
+
+target_compile_options(adaptivepq_faiss PRIVATE
+    $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-O3 -march=native>
+)
+
+add_executable(adaptivepq_residual
+    main_residual.cpp
+)
+
+target_link_libraries(adaptivepq_residual PRIVATE dataset)
+
+target_compile_options(adaptivepq_residual PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>:-O3 -march=native>
 )
 

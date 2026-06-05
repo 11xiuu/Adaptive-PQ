@@ -137,10 +137,10 @@ int main() {
     const std::filesystem::path result_dir = "../result/" + dataset_dir.stem().string() + "_" + std::to_string(max_base_n);
     std::filesystem::create_directories(result_dir);
     const std::vector<BenchmarkConfig> configs = {
-        {"8x8bit-local", make_uniform_config(index_base.d, 8, 8), {0.8f}, 0},
-        {"16x4bit-local", make_uniform_config(index_base.d, 16, 4), {0.8f}, 0},
-        {"kcenter8", {}, {1.0f, 0.8f}, 8},
-        {"kcenter16", {}, {1.0f, 0.8f}, 16}
+        {"8x8bit-residual", make_uniform_config(index_base.d, 8, 8), {0.8f}, 0, true},
+        {"16x4bit-residual", make_uniform_config(index_base.d, 16, 4), {0.8f}, 0, true},
+        {"kcenter8-residual", {}, {1.0f, 0.8f}, 8, true},
+        {"kcenter16-residual", {}, {1.0f, 0.8f}, 16, true}
     };
 
     std::cout << "building ground truth\n";
@@ -190,8 +190,7 @@ int main() {
                 for (std::int64_t qi = 0; qi < index_query.n; ++qi) {
                     const QueryResult result = index.query_refine(
                         index_query.data_ptr + qi * index_query.d,
-                        nprobe, topk, alpha
-                    );
+                        nprobe, topk, alpha);
                     const std::int64_t result_topk = std::min(
                         topk, static_cast<std::int64_t>(result.results.size()));
                     for (std::int64_t i = 0; i < result_topk; ++i) {

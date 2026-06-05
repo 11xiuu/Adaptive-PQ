@@ -1,0 +1,24 @@
+{
+  "name": "16x4bit-local",
+  "alpha": 0.8,
+  "build_ms": 1243.32,
+  "average_bits": 64,
+  "topk": 10,
+  "base_n": 100000,
+  "base_d": 128,
+  "query_n": 100,
+  "results": [
+    {"nprobe": 1, "time_ms": 0.1614, "recall": 0.424000},
+    {"nprobe": 2, "time_ms": 0.2315, "recall": 0.613000},
+    {"nprobe": 3, "time_ms": 0.2890, "recall": 0.715000},
+    {"nprobe": 4, "time_ms": 0.3525, "recall": 0.792000},
+    {"nprobe": 5, "time_ms": 0.4041, "recall": 0.840000},
+    {"nprobe": 7, "time_ms": 0.5102, "recall": 0.890000},
+    {"nprobe": 10, "time_ms": 0.6628, "recall": 0.942000},
+    {"nprobe": 15, "time_ms": 0.8669, "recall": 0.974000},
+    {"nprobe": 20, "time_ms": 1.0152, "recall": 0.989000},
+    {"nprobe": 30, "time_ms": 1.2655, "recall": 0.998000},
+    {"nprobe": 40, "time_ms": 1.4880, "recall": 0.998000},
+    {"nprobe": 50, "time_ms": 1.6227, "recall": 0.999000}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "kcenter16-residual",
+  "alpha": 0.8,
+  "build_ms": 28441.7,
+  "average_bits": 98.184,
+  "topk": 10,
+  "base_n": 100000,
+  "base_d": 128,
+  "query_n": 100,
+  "results": [
+    {"nprobe": 1, "time_ms": 0.1334, "recall": 0.424000},
+    {"nprobe": 2, "time_ms": 0.1884, "recall": 0.613000},
+    {"nprobe": 3, "time_ms": 0.2341, "recall": 0.715000},
+    {"nprobe": 4, "time_ms": 0.2874, "recall": 0.792000},
+    {"nprobe": 5, "time_ms": 0.3274, "recall": 0.840000},
+    {"nprobe": 7, "time_ms": 0.3824, "recall": 0.890000},
+    {"nprobe": 10, "time_ms": 0.4571, "recall": 0.942000},
+    {"nprobe": 15, "time_ms": 0.5836, "recall": 0.974000},
+    {"nprobe": 20, "time_ms": 0.7430, "recall": 0.989000},
+    {"nprobe": 30, "time_ms": 0.9162, "recall": 0.998000},
+    {"nprobe": 40, "time_ms": 1.0295, "recall": 0.998000},
+    {"nprobe": 50, "time_ms": 1.1762, "recall": 0.999000}
+  ]
+}

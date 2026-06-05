@@ -399,11 +399,27 @@ void Index::build(const Dataset& data) {
     std::cout << "building per-list PQ\n";
     double total_bits = 0.0;
     std::int64_t total_encoded = 0;
-    const float adaptive_radius_sq = adaptive_config_
-        ? adaptive_radius_scale_ * global_variance_sum(data)
-        : 0.0f;
 
+    // Compute variance for adaptive radius (use residual variance if in residual mode)
+    float adaptive_radius_sq = 0.0f;
     if (adaptive_config_) {
+        if (residual_ && coarse_k > 0) {
+            double sum_sq = 0.0;
+            std::int64_t sample_n = std::min(data.n, std::int64_t{10000});
+            for (std::int64_t i = 0; i < sample_n; ++i) {
+                const std::int64_t c = nearest_centroid(
+                    data.data_ptr + i * data.d, coarse_centroids_, coarse_k, data.d);
+                for (std::int64_t j = 0; j < data.d; ++j) {
+                    const float diff = data.data_ptr[i * data.d + j] -
+                                       coarse_centroids_[static_cast<std::size_t>(c * data.d + j)];
+                    sum_sq += static_cast<double>(diff * diff);
+                }
+            }
+            adaptive_radius_sq = adaptive_radius_scale_ *
+                static_cast<float>(sum_sq / static_cast<double>(sample_n));
+        } else {
+            adaptive_radius_sq = adaptive_radius_scale_ * global_variance_sum(data);
+        }
         std::cout << "adaptive radius_sq=" << adaptive_radius_sq << "\n";
     }
 
@@ -414,13 +430,6 @@ void Index::build(const Dataset& data) {
         if (list_n == 0) {
             print_list_progress(list_id + 1, static_cast<std::int64_t>(lists_.size()));
             continue;
-        }
-
-        if (residual_) {
-            if (adaptive_config_) {
-                std::cout << "residual mode\n";
-            }
-            std::cout << "\nresidual list_id=" << list_id << " n=" << list_n << '\n';
         }
 
         // Build residual dataset if in residual mode
@@ -758,9 +767,10 @@ QueryResult Index::query_refine(
 
             const std::int64_t id = list.ids[static_cast<std::size_t>(row)];
             if (static_cast<std::int64_t>(heap.size()) >= topk) {
-                const float lower_bound =
-                    pq_dist - alpha * quantization_errors_[static_cast<std::size_t>(id)];
-                if (lower_bound > heap.front().distance) {
+                const float pq_l2 = std::sqrt(pq_dist);
+                const float qe_l2 = std::sqrt(quantization_errors_[static_cast<std::size_t>(id)]);
+                const float bound_l2 = pq_l2 - alpha * qe_l2;
+                if (bound_l2 * bound_l2 > heap.front().distance) {
                     ++out.skipped_count;
                     continue;
                 }
@@ -780,3 +790,4 @@ QueryResult Index::query_refine(
     out.results = std::move(heap);
     return out;
 }
+
